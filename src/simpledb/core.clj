@@ -28,7 +28,10 @@
     (spit "sdb.db" (pr-str cur))))
 
 (defn read-db []
-  (let [content (or (read-string (slurp "sdb.db")) {})]
+  (let [content (try 
+                  (read-string (slurp "sdb.db"))
+                  (catch Exception e
+                    {}))]
     (reset! *db* content)
     (if (seq content)
       true
