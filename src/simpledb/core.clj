@@ -6,19 +6,21 @@
 (defonce *db* (atom {}))
 (defonce *timer* (. Executors newScheduledThreadPool 1))
 
-(defn store! [k v]
+(defn put! [k v]
   (swap! *db* assoc k v)
-  nil)
+  [k v])
 
 (defn get [k]
   (clojure.core/get @*db* k))
 
 (defn remove! [k]
   (swap! *db* dissoc k)
-  nil)
+  k)
 
 (defn update! [k f & args]
-  (swap! *db* #(assoc % k (apply f (clojure.core/get % k) args))))
+  (get 
+    (swap! *db* #(assoc % k (apply f (clojure.core/get % k) args))) 
+    k))
 
 (defn persist-db []
   (let [cur @*db*]
@@ -40,24 +42,3 @@
   (read-db)
   (.. Runtime getRuntime (addShutdownHook (Thread. persist-db)))
   (. *timer* (scheduleAtFixedRate persist-db (long 5) (long 5) (. TimeUnit MINUTES))))
-
-(init)
-
-(defn write-test []
-  (let [t (System/currentTimeMillis)]
-    (loop [iter 0]
-      (if (>= (- (System/currentTimeMillis) t) 1000)
-        (println iter)
-        (do
-          (store! iter iter)
-          (recur (inc iter)))))))
-
-(defn read-test []
-  (let [t (System/currentTimeMillis)]
-    (loop [iter 0]
-      (if (>= (- (System/currentTimeMillis) t) 1000)
-        (println iter)
-        (do
-          (get iter)
-          (recur (inc iter)))))))
-
