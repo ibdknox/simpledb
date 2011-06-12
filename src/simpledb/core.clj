@@ -13,12 +13,15 @@
 (defn get [k]
   (clojure.core/get @*db* k))
 
+(defn get-in [k ks]
+  (clojure.core/get-in @*db* (concat [k] ks)))
+
 (defn remove! [k]
   (swap! *db* dissoc k)
   k)
 
 (defn update! [k f & args]
-  (get 
+  (clojure.core/get 
     (swap! *db* #(assoc % k (apply f (clojure.core/get % k) args))) 
     k))
 
