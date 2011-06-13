@@ -1,5 +1,5 @@
 (ns simpledb.core
-  (:refer-clojure :exclude [get remove])
+  (:refer-clojure :exclude [get get-in remove])
   (:import java.util.concurrent.TimeUnit
            java.util.concurrent.Executors))
 
@@ -14,7 +14,7 @@
   (clojure.core/get @*db* k))
 
 (defn get-in [k ks]
-  (clojure.core/get-in @*db* (concat [k] ks)))
+  (clojure.core/get-in (get k) ks))
 
 (defn remove! [k]
   (swap! *db* dissoc k)
@@ -28,12 +28,13 @@
 (defn persist-db []
   (let [cur @*db*]
     (println "Persisting " (count cur) " keys.")
-    (spit "sdb.db" (pr-str cur))))
+    (spit "./sdb.db" (pr-str cur))))
 
 (defn read-db []
   (let [content (try 
-                  (read-string (slurp "sdb.db"))
+                  (read-string (slurp "./sdb.db"))
                   (catch Exception e
+                    (println "Could not find a sdb.db file. Starting from scratch")
                     {}))]
     (reset! *db* content)
     (if (seq content)
