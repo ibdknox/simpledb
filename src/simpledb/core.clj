@@ -34,15 +34,13 @@
   (let [content (try 
                   (read-string (slurp "./sdb.db"))
                   (catch Exception e
-                    (println "Could not find a sdb.db file. Starting from scratch")
+                    (println "SimpleDB: Could not find a sdb.db file. Starting from scratch")
                     {}))]
     (reset! *db* content)
-    (if (seq content)
-      (println "SimpleDB: " (count content) " keys are loaded.")
-      (println "SimpleDB: No keys loaded."))
-    (if (seq content)
-      true
-      nil)))
+    (let [not-empty? (complement empty?)]
+      (when (not-empty? content)
+        (println "SimpleDB: " (count content) " keys are loaded.")
+        true))))
 
 (defn clear! []
   (reset! *db* {})
