@@ -27,19 +27,20 @@
 
 (defn persist-db []
   (let [cur @*db*]
-    (println "Persisting " (count cur) " keys.")
+    (println "SimpleDB: Persisting " (count cur) " keys.")
     (spit "./sdb.db" (pr-str cur))))
 
 (defn read-db []
   (let [content (try 
                   (read-string (slurp "./sdb.db"))
                   (catch Exception e
-                    (println "Could not find a sdb.db file. Starting from scratch")
+                    (println "SimpleDB: Could not find a sdb.db file. Starting from scratch")
                     {}))]
     (reset! *db* content)
-    (if (seq content)
-      true
-      nil)))
+    (let [not-empty? (complement empty?)]
+      (when (not-empty? content)
+        (println "SimpleDB: " (count content) " keys are loaded.")
+        true))))
 
 (defn clear! []
   (reset! *db* {})
