@@ -50,4 +50,5 @@
 	(let [db-filename (or (first filename) "./sdb.db")]
 	  (read-db db-filename)
 	  (.. Runtime getRuntime (addShutdownHook (Thread. #(persist-db db-filename))))
-	  (. *timer* (scheduleAtFixedRate #(persist-db db-filename) (long 5) (long 5) (. TimeUnit MINUTES)))))
+	  ;(. *timer* (scheduleAtFixedRate #(persist-db db-filename) (long 5) (long 5) (. TimeUnit MINUTES)))
+	))
