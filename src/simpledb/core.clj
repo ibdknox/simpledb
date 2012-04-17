@@ -25,16 +25,16 @@
     (swap! *db* #(assoc % k (apply f (clojure.core/get % k) args))) 
     k))
 
-(defn persist-db []
+(defn persist-db [db-filename]
   (let [cur @*db*]
     (println "SimpleDB: Persisting " (count cur) " keys.")
-    (spit "./sdb.db" (pr-str cur))))
+    (spit db-filename (pr-str cur))))
 
-(defn read-db []
+(defn read-db [db-filename]
   (let [content (try 
-                  (read-string (slurp "./sdb.db"))
+                  (read-string (slurp db-filename))
                   (catch Exception e
-                    (println "SimpleDB: Could not find a sdb.db file. Starting from scratch")
+                    (println "SimpleDB: Could not find " db-filename " file. Starting from scratch")
                     {}))]
     (reset! *db* content)
     (let [not-empty? (complement empty?)]
@@ -46,7 +46,9 @@
   (reset! *db* {})
   (persist-db))
 
-(defn init []
-  (read-db)
-  (.. Runtime getRuntime (addShutdownHook (Thread. persist-db)))
-  (. *timer* (scheduleAtFixedRate persist-db (long 5) (long 5) (. TimeUnit MINUTES))))
+(defn init [& filename]
+	(let [db-filename (or (first filename) "./sdb.db")]
+	  (read-db db-filename)
+	  (.. Runtime getRuntime (addShutdownHook (Thread. #(persist-db db-filename))))
+	  ;(. *timer* (scheduleAtFixedRate #(persist-db db-filename) (long 5) (long 5) (. TimeUnit MINUTES)))
+	))
